@@ -1,0 +1,64 @@
+ORG 0000H     ; Set the origin to 0000H
+MOV DPTR, #LCD_CMD     ; LCD command address
+ACALL LCD_INIT     ; Initialize the LCD
+MOV R0, #60        ; Start countdown from 60
+
+LOOP:  
+    MOV A, R0       ; Load countdown value into accumulator
+    ACALL DISPLAY_NUMBER    ; Call subroutine to display the number on LCD
+    ACALL DELAY     ; Wait for 1 second
+    DJNZ R0, LOOP   ; Decrement R0, if not zero, loop again
+    SJMP END        ; Jump to end when countdown reaches 0
+
+LCD_INIT:
+    ; Initialize the LCD with basic commands
+    MOV A, #38H     ; Function set
+    ACALL CMD
+    MOV A, #0CH     ; Display on, cursor off
+    ACALL CMD
+    MOV A, #01H     ; Clear display
+    ACALL CMD
+    MOV A, #06H     ; Entry mode set
+    ACALL CMD
+    RET
+
+DISPLAY_NUMBER:
+    ; Display the number in register A on the LCD
+    MOV A, R0
+    MOV B, #10
+    DIV AB          ; Divide by 10, quotient in A (tens), remainder in B (ones)
+    MOV A, B
+    ACALL DISPLAY_CHAR    ; Display ones place
+    MOV A, R0
+    ACALL DISPLAY_CHAR    ; Display tens place
+    RET
+
+DISPLAY_CHAR:
+    ; Send the character to the LCD
+    MOV DPTR, #LCD_DATA    ; Load LCD data address
+    MOVX @DPTR, A          ; Output the character
+    RET
+
+CMD:
+    ; Send command to the LCD
+    MOV DPTR, #LCD_CMD
+    MOVX @DPTR, A
+    RET
+
+DELAY:
+    ; 1-second delay subroutine
+    MOV R1, #250
+    MOV R2, #250
+DELAY_LOOP:
+    DJNZ R2, DELAY_LOOP
+    DJNZ R1, DELAY_LOOP
+    RET
+
+END:
+    SJMP END
+
+; Data address for LCD
+LCD_CMD EQU 080H
+LCD_DATA EQU 081H
+
+END
