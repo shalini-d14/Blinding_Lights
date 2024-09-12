@@ -1,64 +1,65 @@
-ORG 0000H     ; Set the origin to 0000H
-MOV DPTR, #LCD_CMD     ; LCD command address
-ACALL LCD_INIT     ; Initialize the LCD
-MOV R0, #60        ; Start countdown from 60
+MOV P2 ,#00
+MOV P1 ,#00
+MOV P2 ,#00
+MOV DPTR,#0300
+START :MOV A,#00
+LOOP1: MOV R2,#02
+HERE2:MOV R3,11111010
+HERE1:CALL DISP
+DJNZ R3,HERE1
+DJNZ R2,HERE2
+ADD A,#01
+DA A
+CJNE A,00111100,LOOP1
+LJMP START
 
-LOOP:  
-    MOV A, R0       ; Load countdown value into accumulator
-    ACALL DISPLAY_NUMBER    ; Call subroutine to display the number on LCD
-    ACALL DELAY     ; Wait for 1 second
-    DJNZ R0, LOOP   ; Decrement R0, if not zero, loop again
-    SJMP END        ; Jump to end when countdown reaches 0
+DISP : MOV R1,A
+ANL A,00001111
+MOVC A,@A+DPTR
+MOV P1,A
+CLR P3.1
+SETB P3.0
+MOV A,R1
+ANL A,11110000
+SWAP A
+MOVC A,@A+DPTR
+MOV P2,A
+CLR P3.0
+SETB P3.1
+MOV A,R1
+RET
 
-LCD_INIT:
-    ; Initialize the LCD with basic commands
-    MOV A, #38H     ; Function set
-    ACALL CMD
-    MOV A, #0CH     ; Display on, cursor off
-    ACALL CMD
-    MOV A, #01H     ; Clear display
-    ACALL CMD
-    MOV A, #06H     ; Entry mode set
-    ACALL CMD
-    RET
+ORG 300H
+DB C0,F9,A4,B0,99,92,82,F8,80,90};MOV P2 ,#00
+MOV P1 ,#00
+MOV P2 ,#00
+MOV DPTR,#0300
+START :MOV A,#00
+LOOP1: MOV R2,#02
+HERE2:MOV R3,11111010
+HERE1:CALL DISP
+DJNZ R3,HERE1
+DJNZ R2,HERE2
+ADD A,#01
+DA A
+CJNE A,00111100,LOOP1
+LJMP START
 
-DISPLAY_NUMBER:
-    ; Display the number in register A on the LCD
-    MOV A, R0
-    MOV B, #10
-    DIV AB          ; Divide by 10, quotient in A (tens), remainder in B (ones)
-    MOV A, B
-    ACALL DISPLAY_CHAR    ; Display ones place
-    MOV A, R0
-    ACALL DISPLAY_CHAR    ; Display tens place
-    RET
+DISP : MOV R1,A
+ANL A,00001111
+MOVC A,@A+DPTR
+MOV P1,A
+CLR P3.1
+SETB P3.0
+MOV A,R1
+ANL A,11110000
+SWAP A
+MOVC A,@A+DPTR
+MOV P2,A
+CLR P3.0
+SETB P3.1
+MOV A,R1
+RET
 
-DISPLAY_CHAR:
-    ; Send the character to the LCD
-    MOV DPTR, #LCD_DATA    ; Load LCD data address
-    MOVX @DPTR, A          ; Output the character
-    RET
-
-CMD:
-    ; Send command to the LCD
-    MOV DPTR, #LCD_CMD
-    MOVX @DPTR, A
-    RET
-
-DELAY:
-    ; 1-second delay subroutine
-    MOV R1, #250
-    MOV R2, #250
-DELAY_LOOP:
-    DJNZ R2, DELAY_LOOP
-    DJNZ R1, DELAY_LOOP
-    RET
-
-END:
-    SJMP END
-
-; Data address for LCD
-LCD_CMD EQU 080H
-LCD_DATA EQU 081H
-
-END
+ORG 300H
+DB C0,F9,A4,B0,99,92,82,F8,80,90};
